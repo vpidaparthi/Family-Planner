@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Hub - 10-Person Shared Planner</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        hand: ['Caveat', 'cursive'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .blackboard-bg {
+            background-color: #1e293b;
+            background-image: radial-gradient(#334155 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .chalk-text {
+            font-family: 'Caveat', cursive;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col md:flex-row">
+
+    <!-- Mobile Header -->
+    <header class="md:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-40">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                F
+            </div>
+            <span class="font-bold text-lg text-slate-800">FamilyHub 10</span>
+        </div>
+        <button id="mobileMenuBtn" class="text-slate-600 p-2 rounded-lg hover:bg-slate-100">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col md:static">
+        <!-- Logo Header -->
+        <div class="p-6 border-b border-slate-100 flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md">
+                <i class="fa-solid fa-people-group"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight text-slate-900">FamilyHub</h1>
+                <p class="text-xs text-slate-500 font-medium">10-Member Planner</p>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn active flex items-center w-full px-4 py-3 rounded-xl font-semibold text-sm transition-all bg-blue-50 text-blue-600">
+                <i class="fa-solid fa-chart-pie w-6 text-lg"></i>
+                <span>Dashboard & Goals</span>
+            </button>
+
+            <button onclick="switchTab('familyTime')" id="nav-familyTime" class="nav-btn flex items-center w-full px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                <i class="fa-solid fa-users-viewfinder w-6 text-lg"></i>
+                <span>Family Time Finder</span>
+            </button>
+
+            <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn flex items-center w-full px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                <i class="fa-solid fa-calendar-days w-6 text-lg"></i>
+                <span>Free-Time Schedule</span>
+            </button>
+
+            <button onclick="switchTab('planner')" id="nav-planner" class="nav-btn flex items-center w-full px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                <i class="fa-solid fa-[#000] fa-list-check w-6 text-lg"></i>
+                <span>Activity Planner</span>
+            </button>
+
+            <button onclick="switchTab('blackboard')" id="nav-blackboard" class="nav-btn flex items-center w-full px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                <i class="fa-solid fa-chalkboard w-6 text-lg"></i>
+                <span>Family Blackboard</span>
+            </button>
+        </nav>
+
+        <!-- Family Quick Quick Overview -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Family Members (10)</span>
+                <button onclick="openMemberModal()" class="text-xs text-blue-600 hover:underline font-semibold">+ Edit</button>
+            </div>
+            <div id="sidebar-members-list" class="flex flex-wrap gap-1.5">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto">
+
+        <!-- Top Bar Header -->
+        <header class="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-slate-200">
+            <div>
+                <h2 id="page-title" class="text-2xl font-bold text-slate-800">Dashboard & Goals</h2>
+                <p id="page-subtitle" class="text-sm text-slate-500">Track daily targets, weekly goals, and overall family sync status.</p>
+            </div>
+
+            <!-- Active User Quick Selector / Timer Control -->
+            <div class="flex items-center space-x-4">
+                <div class="bg-blue-50/80 border border-blue-100 rounded-xl px-4 py-2 flex items-center space-x-3">
+                    <i class="fa-solid fa-stopwatch text-blue-600 text-lg"></i>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Log Time For</div>
+                        <select id="activeUserSelect" class="bg-transparent font-bold text-sm text-slate-800 focus:outline-none cursor-pointer">
+                            <!-- Populated JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="openQuickLogModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-blue-500/20 flex items-center space-x-2 transition-all">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Log 2-Hr Target</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- View Sections Container -->
+        <div class="p-4 md:p-8 flex-1">
+
+            <!-- 1. DASHBOARD & TARGETS SECTION -->
+            <section id="view-dashboard" class="tab-view space-y-6">
+                <!-- Top Overview Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold uppercase text-slate-400">Daily Target Met</div>
+                            <div id="stat-daily-met" class="text-2xl font-extrabold text-slate-800">0 / 10</div>
+                            <div class="text-xs text-slate-500">2-hour goal completion today</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-clock font-bold"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold uppercase text-slate-400">Total Hours Logged</div>
+                            <div id="stat-weekly-hours" class="text-2xl font-extrabold text-slate-800">0 hrs</div>
+                            <div class="text-xs text-slate-500">Combined family goal this week</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-people-roof"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold uppercase text-slate-400">Shared Time Slot</div>
+                            <div id="stat-next-shared" class="text-2xl font-extrabold text-slate-800">6:00 PM</div>
+                            <div class="text-xs text-slate-500">Peak overlapping free window</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-tasks"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold uppercase text-slate-400">Active Tasks</div>
+                            <div id="stat-active-tasks" class="text-2xl font-extrabold text-slate-800">0</div>
+                            <div class="text-xs text-slate-500">Pending family activities</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily 2-Hour Target Tracker Wall -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Daily Target (2-Hour Focused Activity)</h3>
+                            <p class="text-sm text-slate-500">Each member targets at least 2 hours of dedicated family focus or skill work per day.</p>
+                        </div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <i class="fa-solid fa-calendar-day mr-1.5"></i> Today's Progress
+                        </span>
+                    </div>
+
+                    <!-- 10 Member Cards Grid -->
+                    <div id="daily-targets-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Weekly Targets Dashboard -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Weekly Target Dashboard (14h / member)</h3>
+                            <p class="text-sm text-slate-500">Aggregated family progress towards the weekly 140-hour collective goal.</p>
+                        </div>
+                    </div>
+
+                    <!-- Family Total Progress Bar -->
+                    <div class="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-slate-700 text-sm">Collective Family Goal Progress</span>
+                            <span id="family-total-text" class="text-sm font-extrabold text-blue-600">0 / 140 hrs</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-3.5 overflow-hidden">
+                            <div id="family-total-bar" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Individual Progress Rows -->
+                    <div id="weekly-targets-list" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. SHARED FAMILY TIME FINDER -->
+            <section id="view-familyTime" class="tab-view hidden space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Shared Family Time Heatmap Matrix</h3>
+                            <p class="text-sm text-slate-500">Visual overlap of all 10 family members' free availability to find optimum shared activity windows.</p>
+                        </div>
+                        <div class="flex items-center space-x-3 text-xs">
+                            <span class="flex items-center"><span class="w-3 h-3 bg-slate-100 rounded mr-1.5 border border-slate-300"></span> Busy</span>
+                            <span class="flex items-center"><span class="w-3 h-3 bg-emerald-200 rounded mr-1.5 border border-emerald-400"></span> Available</span>
+                            <span class="flex items-center"><span class="w-3 h-3 bg-emerald-500 rounded mr-1.5 border border-emerald-600"></span> High Overlap (Shared Time!)</span>
+                        </div>
+                    </div>
+
+                    <!-- Matrix Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs uppercase text-slate-400 font-bold bg-slate-50">
+                                    <th class="p-3 w-40">Family Member</th>
+                                    <th class="p-3 text-center">8 AM</th>
+                                    <th class="p-3 text-center">10 AM</th>
+                                    <th class="p-3 text-center">12 PM</th>
+                                    <th class="p-3 text-center">2 PM</th>
+                                    <th class="p-3 text-center">4 PM</th>
+                                    <th class="p-3 text-center">6 PM</th>
+                                    <th class="p-3 text-center">8 PM</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matrix-tbody" class="divide-y divide-slate-100 text-sm">
+                                <!-- JS Populated -->
+                            </tbody>
+                            <tfoot class="border-t-2 border-slate-200 font-bold bg-slate-50">
+                                <tr id="matrix-tfoot-overlap">
+                                    <!-- Dynamic Overlap Row -->
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Best Shared Slot Recommendations Card -->
+                <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute right-0 top-0 opacity-10 translate-x-8 -translate-y-8">
+                        <i class="fa-solid fa-users text-9xl"></i>
+                    </div>
+                    <div class="relative z-10 max-w-2xl">
+                        <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 mb-3">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Smart Overlap Engine
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Recommended Shared Family Windows Today</h3>
+                        <p class="text-indigo-200 text-sm mb-4">Based on current free time toggles across all 10 members, these are the best times to gather for dinner, games, or meetings.</p>
+
+                        <div id="recommended-slots-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Populated JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. SHARED CALENDAR & AVAILABILITY -->
+            <section id="view-calendar" class="tab-view hidden space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Weekly Free Time & Events Schedule</h3>
+                            <p class="text-sm text-slate-500">Manage individual schedule slots and toggle free/busy availability.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openAddEventModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow flex items-center space-x-1.5">
+                                <i class="fa-solid fa-calendar-plus"></i>
+                                <span>Add Event / Free Slot</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Day Selector Tabs -->
+                    <div id="calendar-day-selector" class="flex space-x-2 border-b border-slate-200 pb-3 overflow-x-auto">
+                        <!-- JS Dynamic Day Pills -->
+                    </div>
+
+                    <!-- Events Schedule List for Selected Day -->
+                    <div class="mt-6">
+                        <h4 id="selected-day-title" class="font-bold text-slate-700 mb-4 flex items-center">
+                            <i class="fa-solid fa-clock text-blue-500 mr-2"></i> Schedule for Today
+                        </h4>
+                        <div id="events-list-container" class="space-y-3">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. SHARED PLANNER & ACTIVITY BOARD -->
+            <section id="view-planner" class="tab-view hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Family Activity Kanban Board</h3>
+                        <p class="text-sm text-slate-500">Organize household chores, outings, and shared targets.</p>
+                    </div>
+                    <button onclick="openAddTaskModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>New Activity Task</span>
+                    </button>
+                </div>
+
+                <!-- Kanban Columns -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Column 1: To Do -->
+                    <div class="bg-slate-100/70 p-4 rounded-2xl border border-slate-200 flex flex-col min-h-[500px]">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-amber-400 rounded-full"></span>
+                                <h4 class="font-bold text-slate-700">To Do</h4>
+                                <span id="count-todo" class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                            </div>
+                        </div>
+                        <div id="column-todo" class="space-y-3 flex-1 overflow-y-auto">
+                            <!-- Tasks populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Column 2: In Progress -->
+                    <div class="bg-slate-100/70 p-4 rounded-2xl border border-slate-200 flex flex-col min-h-[500px]">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                                <h4 class="font-bold text-slate-700">In Progress</h4>
+                                <span id="count-inprogress" class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                            </div>
+                        </div>
+                        <div id="column-inprogress" class="space-y-3 flex-1 overflow-y-auto">
+                            <!-- Tasks populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Completed -->
+                    <div class="bg-slate-100/70 p-4 rounded-2xl border border-slate-200 flex flex-col min-h-[500px]">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
+                                <h4 class="font-bold text-slate-700">Completed</h4>
+                                <span id="count-completed" class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                            </div>
+                        </div>
+                        <div id="column-completed" class="space-y-3 flex-1 overflow-y-auto">
+                            <!-- Tasks populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. SHARED BLACKBOARD & STICKY NOTES -->
+            <section id="view-blackboard" class="tab-view hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Family Interactive Blackboard</h3>
+                        <p class="text-sm text-slate-500">Leave digital sticky notes, announcements, and hand-drawn doodles for everyone.</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="openAddNoteModal()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-xl font-bold text-sm shadow flex items-center space-x-1.5">
+                            <i class="fa-solid fa-sticky-note"></i>
+                            <span>Post Sticky Note</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Notes Wall (2 cols) -->
+                    <div class="lg:col-span-2 blackboard-bg rounded-2xl p-6 border-4 border-amber-900/40 shadow-2xl min-h-[550px] relative">
+                        <div class="flex justify-between items-center mb-6 pb-2 border-b border-slate-700">
+                            <span class="text-amber-200/80 chalk-text text-2xl font-bold"><i class="fa-solid fa-pin text-amber-400 mr-2"></i> Notice Board & Quick Notes</span>
+                            <span class="text-xs text-slate-400 font-sans">Click note menu to delete</span>
+                        </div>
+
+                        <!-- Sticky Notes Container -->
+                        <div id="sticky-notes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Populated JS -->
+                        </div>
+                    </div>
+
+                    <!-- Canvas Doodle Corner (1 col) -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-slate-800 flex items-center">
+                                <i class="fa-solid fa-paintbrush text-indigo-500 mr-2"></i> Quick Doodle Pad
+                            </h4>
+                            <button onclick="clearCanvas()" class="text-xs text-rose-500 hover:underline font-semibold">Clear Pad</button>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">Draw quick messages or icons for the family wall.</p>
+
+                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex-1 flex flex-col justify-center items-center">
+                            <canvas id="doodleCanvas" class="w-full h-[320px] bg-white cursor-crosshair touch-none"></canvas>
+                        </div>
+
+                        <!-- Palette Controls -->
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex space-x-2">
+                                <button onclick="setBrushColor('#000000')" class="w-6 h-6 rounded-full bg-black ring-2 ring-offset-1 ring-slate-400"></button>
+                                <button onclick="setBrushColor('#ef4444')" class="w-6 h-6 rounded-full bg-red-500"></button>
+                                <button onclick="setBrushColor('#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500"></button>
+                                <button onclick="setBrushColor('#10b981')" class="w-6 h-6 rounded-full bg-emerald-500"></button>
+                                <button onclick="setBrushColor('#f59e0b')" class="w-6 h-6 rounded-full bg-amber-500"></button>
+                            </div>
+                            <input type="range" id="brushSize" min="2" max="15" value="4" class="w-24">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL: Quick Log 2-Hour Target Time -->
+    <div id="modal-log-time" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Log Hours / Daily Target</h3>
+                <button onclick="closeModal('modal-log-time')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="formLogTime" onsubmit="handleLogTimeSubmit(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Family Member</label>
+                        <select id="logMemberSelect" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <!-- Populated JS -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hours Logged Today</label>
+                        <input type="number" id="logHoursInput" step="0.5" min="0.5" max="12" value="2" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                        <p class="text-xs text-slate-400 mt-1">Target is at least 2.0 hrs for full daily credit.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Activity Description</label>
+                        <input type="text" id="logActivityInput" placeholder="e.g. Shared Math Tutoring / Family Gardening" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('modal-log-time')" class="w-1/2 py-2.5 rounded-xl border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 text-sm">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 text-sm shadow-md shadow-blue-500/20">Save Target Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Activity Task -->
+    <div id="modal-add-task" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Add New Family Task</h3>
+                <button onclick="closeModal('modal-add-task')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="formAddTask" onsubmit="handleAddTaskSubmit(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Task Title</label>
+                        <input type="text" id="taskTitleInput" placeholder="e.g. Grocery Shopping for Weekend" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Assign To Member</label>
+                        <select id="taskAssignSelect" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <!-- JS Populated -->
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Category</label>
+                            <select id="taskCategorySelect" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500">
+                                <option value="Chore">Chore</option>
+                                <option value="Family Outing">Family Outing</option>
+                                <option value="Target Goal">Target Goal</option>
+                                <option value="Event Prep">Event Prep</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
+                            <select id="taskStatusSelect" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500">
+                                <option value="todo">To Do</option>
+                                <option value="inprogress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('modal-add-task')" class="w-1/2 py-2.5 rounded-xl border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 text-sm">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 text-sm shadow-md">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Post Sticky Note -->
+    <div id="modal-add-note" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Post Sticky Note</h3>
+                <button onclick="closeModal('modal-add-note')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="formAddNote" onsubmit="handleAddNoteSubmit(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Author</label>
+                        <select id="noteAuthorSelect" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <!-- JS Populated -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Message Content</label>
+                        <textarea id="noteContentInput" rows="3" placeholder="Write announcement or note..." class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" required></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Sticky Color</label>
+                        <div class="flex space-x-3">
+                            <label class="cursor-pointer"><input type="radio" name="noteBg" value="bg-amber-100 text-amber-900 border-amber-300" checked class="sr-only peer"><span class="block w-8 h-8 rounded-full bg-amber-200 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-amber-500"></span></label>
+                            <label class="cursor-pointer"><input type="radio" name="noteBg" value="bg-emerald-100 text-emerald-900 border-emerald-300" class="sr-only peer"><span class="block w-8 h-8 rounded-full bg-emerald-200 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-emerald-500"></span></label>
+                            <label class="cursor-pointer"><input type="radio" name="noteBg" value="bg-sky-100 text-sky-900 border-sky-300" class="sr-only peer"><span class="block w-8 h-8 rounded-full bg-sky-200 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-sky-500"></span></label>
+                            <label class="cursor-pointer"><input type="radio" name="noteBg" value="bg-rose-100 text-rose-900 border-rose-300" class="sr-only peer"><span class="block w-8 h-8 rounded-full bg-rose-200 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-rose-500"></span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('modal-add-note')" class="w-1/2 py-2.5 rounded-xl border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 text-sm">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-amber-400 text-slate-900 font-bold hover:bg-amber-500 text-sm shadow-md">Post Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Manage Family Profiles -->
+    <div id="modal-manage-members" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">Family Members Profiles</h3>
+                    <p class="text-xs text-slate-500">Edit names and color themes for all 10 family members.</p>
+                </div>
+                <button onclick="closeModal('modal-manage-members')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div id="member-edit-list" class="space-y-3 flex-1 overflow-y-auto pr-1">
+                <!-- JS Dynamic Member Edit Rows -->
+            </div>
+
+            <div class="mt-4 pt-3 border-t flex justify-end">
+                <button onclick="closeModal('modal-manage-members')" class="bg-blue-600 text-white font-semibold px-5 py-2 rounded-xl text-sm hover:bg-blue-700">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP JAVASCRIPT STATE & LOGIC -->
+    <script>
+        // ----------------------------------------------------
+        // 1. DATA STATE (10 Family Members Pre-populated)
+        // ----------------------------------------------------
+        let familyMembers = [
+            { id: 1, name: "Dad (Robert)", role: "Parent", color: "bg-blue-500", hex: "#3b82f6", avatar: "👨", dailyHours: 2.5, weeklyHours: 14.5, availability: { 8: false, 10: true, 12: false, 14: true, 16: true, 18: true, 20: true } },
+            { id: 2, name: "Mom (Sarah)", role: "Parent", color: "bg-rose-500", hex: "#f43f5e", avatar: "👩", dailyHours: 2.0, weeklyHours: 13.0, availability: { 8: true, 10: true, 12: false, 14: false, 16: true, 18: true, 20: true } },
+            { id: 3, name: "Grandma (Elena)", role: "Grandparent", color: "bg-purple-500", hex: "#a855f7", avatar: "👵", dailyHours: 3.0, weeklyHours: 16.0, availability: { 8: true, 10: true, 12: true, 14: true, 16: true, 18: true, 20: false } },
+            { id: 4, name: "Leo", role: "Teen", color: "bg-emerald-500", hex: "#10b981", avatar: "👦", dailyHours: 1.5, weeklyHours: 10.5, availability: { 8: false, 10: false, 12: true, 14: true, 16: true, 18: true, 20: true } },
+            { id: 5, name: "Maya", role: "Teen", color: "bg-amber-500", hex: "#f59e0b", avatar: "👧", dailyHours: 2.0, weeklyHours: 12.0, availability: { 8: false, 10: true, 12: true, 14: false, 16: true, 18: true, 20: false } },
+            { id: 6, name: "Uncle Mark", role: "Relative", color: "bg-cyan-500", hex: "#06b6d4", avatar: "🧔", dailyHours: 1.0, weeklyHours: 8.0, availability: { 8: true, 10: false, 12: false, 14: true, 16: true, 18: true, 20: true } },
+            { id: 7, name: "Aunt Chloe", role: "Relative", color: "bg-pink-500", hex: "#ec4899", avatar: "👩‍🦰", dailyHours: 2.0, weeklyHours: 11.5, availability: { 8: false, 10: true, 12: true, 14: true, 16: false, 18: true, 20: true } },
+            { id: 8, name: "Ethan", role: "Child", color: "bg-orange-500", hex: "#f97316", avatar: "🧒", dailyHours: 2.0, weeklyHours: 14.0, availability: { 8: true, 10: true, 12: true, 14: true, 16: true, 18: true, 20: false } },
+            { id: 9, name: "Sophie", role: "Child", color: "bg-indigo-500", hex: "#6366f1", avatar: "👶", dailyHours: 2.5, weeklyHours: 15.0, availability: { 8: true, 10: true, 12: true, 14: true, 16: true, 18: true, 20: false } },
+            { id: 10, name: "Grandpa (Arthur)", role: "Grandparent", color: "bg-teal-500", hex: "#14b8a6", avatar: "👴", dailyHours: 2.0, weeklyHours: 13.5, availability: { 8: true, 10: true, 12: true, 14: false, 16: true, 18: true, 20: false } }
+        ];
+
+        let tasks = [
+            { id: 1, title: "Sunday Family Dinner & Game Night", assignedTo: 2, category: "Family Outing", status: "inprogress" },
+            { id: 2, title: "Backyard Garden Cleanup & Planting", assignedTo: 1, category: "Chore", status: "todo" },
+            { id: 3, title: "Math & Reading Target Tutoring Session", assignedTo: 3, category: "Target Goal", status: "completed" },
+            { id: 4, title: "Weekly Grocery & Supplies Restock", assignedTo: 6, category: "Chore", status: "todo" },
+            { id: 5, title: "Prepare Birthday Party Decorations", assignedTo: 5, category: "Event Prep", status: "inprogress" }
+        ];
+
+        let stickyNotes = [
+            { id: 1, authorId: 3, content: "Don't forget Grandma's famous cookies are in the jar! Help yourselves kids 🍪", style: "bg-amber-100 text-amber-900 border-amber-300" },
+            { id: 2, authorId: 1, content: "Shared Family Time finding window is updated for 6:00 PM today. Let's do dinner together!", style: "bg-sky-100 text-sky-900 border-sky-300" },
+            { id: 3, authorId: 4, content: "Leo met his 2-hour daily reading target! 📚🎉", style: "bg-emerald-100 text-emerald-900 border-emerald-300" }
+        ];
+
+        let selectedDay = "Today";
+        const timeSlots = [8, 10, 12, 14, 16, 18, 20];
+
+        // ----------------------------------------------------
+        // 2. INITIALIZATION & UI RENDERING
+        // ----------------------------------------------------
+        window.onload = function() {
+            renderSidebarMembers();
+            populateMemberDropdowns();
+            renderDashboard();
+            renderFamilyTimeMatrix();
+            renderCalendarView();
+            renderPlannerBoard();
+            renderBlackboardNotes();
+            initDoodleCanvas();
+
+            // Mobile menu listener
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            });
+        };
+
+        // Navigation Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-blue-50', 'text-blue-600');
+                el.classList.add('text-slate-600');
+            });
+
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.classList.add('bg-blue-50', 'text-blue-600');
+            activeBtn.classList.remove('text-slate-600');
+
+            // Header titles update
+            const titles = {
+                dashboard: ["Dashboard & Targets", "Track daily 2-hour targets and weekly progress."],
+                familyTime: ["Shared Family Time Finder", "Coordinate overlapping free hours for all 10 members."],
+                calendar: ["Free-Time Schedule", "Manage availability slots and daily events."],
+                planner: ["Activity Planner", "Shared family task management board."],
+                blackboard: ["Family Blackboard", "Sticky notes and canvas doodle wall."]
+            };
+            document.getElementById('page-title').innerText = titles[tabId][0];
+            document.getElementById('page-subtitle').innerText = titles[tabId][1];
+
+            // Close sidebar on mobile
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        }
+
+        // Render Sidebar Member Badges
+        function renderSidebarMembers() {
+            const container = document.getElementById('sidebar-members-list');
+            container.innerHTML = familyMembers.map(m => `
+                <div title="${m.name} (${m.role})" class="w-8 h-8 rounded-full ${m.color} text-white font-bold flex items-center justify-center text-xs shadow-sm cursor-pointer transition-transform hover:scale-110">
+                    ${m.avatar}
+                </div>
+            `).join('');
+        }
+
+        // Populate Dropdowns Across Modals & Header
+        function populateMemberDropdowns() {
+            const dropdowns = ['activeUserSelect', 'logMemberSelect', 'taskAssignSelect', 'noteAuthorSelect'];
+            dropdowns.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.innerHTML = familyMembers.map(m => `
+                    <option value="${m.id}">${m.avatar} ${m.name}</option>
+                `).join('');
+            });
+        }
+
+        // ----------------------------------------------------
+        // 3. DASHBOARD & TARGETS LOGIC
+        // ----------------------------------------------------
+        function renderDashboard() {
+            // Stat Cards Calculation
+            const dailyMetCount = familyMembers.filter(m => m.dailyHours >= 2.0).length;
+            const totalWeeklyHours = familyMembers.reduce((acc, m) => acc + m.weeklyHours, 0);
+
+            document.getElementById('stat-daily-met').innerText = `${dailyMetCount} / 10`;
+            document.getElementById('stat-weekly-hours').innerText = `${totalWeeklyHours.toFixed(1)} hrs`;
+            document.getElementById('stat-active-tasks').innerText = tasks.filter(t => t.status !== 'completed').length;
+
+            // Daily Target Cards (10 Members Grid)
+            const dailyGrid = document.getElementById('daily-targets-grid');
+            dailyGrid.innerHTML = familyMembers.map(m => {
+                const met = m.dailyHours >= 2.0;
+                const pct = Math.min(100, (m.dailyHours / 2.0) * 100);
+                return `
+                    <div class="border border-slate-200/90 rounded-xl p-4 bg-slate-50/50 flex flex-col justify-between hover:shadow-md transition-all">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <span class="text-2xl">${m.avatar}</span>
+                            <div class="truncate">
+                                <h4 class="font-bold text-sm text-slate-800 truncate">${m.name}</h4>
+                                <span class="text-xs text-slate-500 font-medium">${m.role}</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center text-xs mb-1">
+                                <span class="font-bold text-slate-600">${m.dailyHours.toFixed(1)} / 2.0 hrs</span>
+                                ${met ? 
+                                    `<span class="text-emerald-600 font-bold flex items-center"><i class="fa-solid fa-circle-check mr-1"></i> Target Met</span>` : 
+                                    `<span class="text-amber-600 font-semibold">${(2.0 - m.dailyHours).toFixed(1)}h left</span>`
+                                }
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                                <div class="h-full rounded-full ${met ? 'bg-emerald-500' : 'bg-blue-500'} transition-all" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Weekly Targets Progress List
+            const weeklyList = document.getElementById('weekly-targets-list');
+            const targetPerMember = 14; // 14 hours weekly target
+            weeklyList.innerHTML = familyMembers.map(m => {
+                const pct = Math.min(100, (m.weeklyHours / targetPerMember) * 100);
+                return `
+                    <div class="flex items-center space-x-4">
+                        <span class="text-xl w-7 text-center">${m.avatar}</span>
+                        <div class="w-32 font-semibold text-xs text-slate-700 truncate">${m.name}</div>
+                        <div class="flex-1">
+                            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
+                                <div class="h-full ${m.color} transition-all duration-300" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700 w-20 text-right">${m.weeklyHours.toFixed(1)} / ${targetPerMember}h</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Total Family Progress Bar
+            const familyPct = Math.min(100, (totalWeeklyHours / 140) * 100);
+            document.getElementById('family-total-text').innerText = `${totalWeeklyHours.toFixed(1)} / 140 hrs (${familyPct.toFixed(0)}%)`;
+            document.getElementById('family-total-bar').style.width = `${familyPct}%`;
+        }
+
+        // ----------------------------------------------------
+        // 4. SHARED FAMILY TIME FINDER (MATRIX & RECOMMENDATIONS)
+        // ----------------------------------------------------
+        function renderFamilyTimeMatrix() {
+            const tbody = document.getElementById('matrix-tbody');
+            const tfoot = document.getElementById('matrix-tfoot-overlap');
+
+            // Render Member Rows with Availability Toggles
+            tbody.innerHTML = familyMembers.map(m => `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="p-3 font-semibold text-slate-800 flex items-center space-x-2">
+                        <span>${m.avatar}</span>
+                        <span class="truncate">${m.name}</span>
+                    </td>
+                    ${timeSlots.map(slot => {
+                        const isFree = m.availability[slot];
+                        return `
+                            <td class="p-2 text-center">
+                                <button onclick="toggleAvailability(${m.id}, ${slot})" class="w-full py-2 rounded-lg text-xs font-bold transition-all ${
+                                    isFree ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm' : 'bg-slate-100 text-slate-400 border border-slate-200'
+                                }">
+                                    ${isFree ? 'Free' : 'Busy'}
+                                </button>
+                            </td>
+                        `;
+                    }).join('')}
+                </tr>
+            `).join('');
+
+            // Calculate Overlaps per Slot
+            let maxOverlap = 0;
+            let bestSlot = "6:00 PM";
+            const overlapCounts = {};
+
+            timeSlots.forEach(slot => {
+                const count = familyMembers.filter(m => m.availability[slot]).length;
+                overlapCounts[slot] = count;
+                if (count > maxOverlap) {
+                    maxOverlap = count;
+                    bestSlot = formatSlotTime(slot);
+                }
+            });
+
+            document.getElementById('stat-next-shared').innerText = bestSlot;
+
+            // Render Overlap Footer
+            tfoot.innerHTML = `
+                <td class="p-3 font-bold text-slate-700">Total Free Count</td>
+                ${timeSlots.map(slot => {
+                    const count = overlapCounts[slot];
+                    const isHigh = count >= 6;
+                    return `
+                        <td class="p-3 text-center">
+                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-extrabold ${
+                                isHigh ? 'bg-emerald-500 text-white shadow' : 'bg-slate-200 text-slate-700'
+                            }">${count} / 10</span>
+                        </td>
+                    `;
+                }).join('')}
+            `;
+
+            // Smart Recommendations Render
+            const recContainer = document.getElementById('recommended-slots-container');
+            const sortedSlots = [...timeSlots].sort((a,b) => overlapCounts[b] - overlapCounts[a]).slice(0, 2);
+            
+            recContainer.innerHTML = sortedSlots.map(slot => `
+                <div class="bg-indigo-950/60 border border-indigo-700/50 p-4 rounded-xl flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-indigo-300 uppercase font-semibold">Top Overlap Slot</div>
+                        <div class="text-lg font-extrabold text-white">${formatSlotTime(slot)}</div>
+                        <div class="text-xs text-indigo-200">${overlapCounts[slot]} of 10 members available</div>
+                    </div>
+                    <button onclick="switchTab('calendar')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                        Schedule Event
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleAvailability(memberId, slot) {
+            const member = familyMembers.find(m => m.id === memberId);
+            if (member) {
+                member.availability[slot] = !member.availability[slot];
+                renderFamilyTimeMatrix();
+            }
+        }
+
+        function formatSlotTime(slot) {
+            if (slot === 12) return '12:00 PM';
+            return slot > 12 ? `${slot - 12}:00 PM` : `${slot}:00 AM`;
+        }
+
+        // ----------------------------------------------------
+        // 5. SHARED CALENDAR & AVAILABILITY SLOTS
+        // ----------------------------------------------------
+        function renderCalendarView() {
+            const days = ["Today", "Tomorrow", "Friday", "Saturday", "Sunday"];
+            const selector = document.getElementById('calendar-day-selector');
+            
+            selector.innerHTML = days.map(d => `
+                <button onclick="setCalendarDay('${d}')" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                    selectedDay === d ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }">
+                    ${d}
+                </button>
+            `).join('');
+
+            document.getElementById('selected-day-title').innerText = `Schedule & Free Slots for ${selectedDay}`;
+
+            // Demo schedule items
+            const eventsContainer = document.getElementById('events-list-container');
+            eventsContainer.innerHTML = familyMembers.slice(0, 5).map(m => `
+                <div class="p-4 rounded-xl border border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-300 transition-all">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full ${m.color} text-white font-bold flex items-center justify-center text-lg">
+                            ${m.avatar}
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-slate-800">${m.name}'s Status</h5>
+                            <p class="text-xs text-slate-500">Free target slot: 4:00 PM - 6:00 PM</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit">
+                        <i class="fa-solid fa-clock mr-1.5"></i> Available for Family Time
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function setCalendarDay(day) {
+            selectedDay = day;
+            renderCalendarView();
+        }
+
+        // ----------------------------------------------------
+        // 6. SHARED PLANNER & ACTIVITY KANBAN
+        // ----------------------------------------------------
+        function renderPlannerBoard() {
+            const cols = {
+                todo: document.getElementById('column-todo'),
+                inprogress: document.getElementById('column-inprogress'),
+                completed: document.getElementById('column-completed')
+            };
+
+            // Clear
+            Object.values(cols).forEach(c => c.innerHTML = '');
+
+            let counts = { todo: 0, inprogress: 0, completed: 0 };
+
+            tasks.forEach(task => {
+                counts[task.status]++;
+                const assignee = familyMembers.find(m => m.id === task.assignedTo) || familyMembers[0];
+                
+                const taskCard = `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                                ${task.category}
+                            </span>
+                            <button onclick="deleteTask(${task.id})" class="text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+
+                        <h5 class="font-bold text-sm text-slate-800 leading-snug">${task.title}</h5>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                            <div class="flex items-center space-x-1.5" title="Assigned to ${assignee.name}">
+                                <span class="text-sm">${assignee.avatar}</span>
+                                <span class="text-xs font-semibold text-slate-600">${assignee.name.split(' ')[0]}</span>
+                            </div>
+
+                            <!-- Move Status Buttons -->
+                            <div class="flex space-x-1">
+                                ${task.status !== 'todo' ? `<button onclick="moveTask(${task.id}, 'todo')" title="Move to To-Do" class="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs"><i class="fa-solid fa-arrow-left"></i></button>` : ''}
+                                ${task.status !== 'inprogress' ? `<button onclick="moveTask(${task.id}, 'inprogress')" title="Move to In Progress" class="p-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs"><i class="fa-solid fa-spinner"></i></button>` : ''}
+                                ${task.status !== 'completed' ? `<button onclick="moveTask(${task.id}, 'completed')" title="Move to Completed" class="p-1 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs"><i class="fa-solid fa-check"></i></button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                cols[task.status].insertAdjacentHTML('beforeend', taskCard);
+            });
+
+            // Update Counts
+            document.getElementById('count-todo').innerText = counts.todo;
+            document.getElementById('count-inprogress').innerText = counts.inprogress;
+            document.getElementById('count-completed').innerText = counts.completed;
+        }
+
+        function moveTask(taskId, newStatus) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.status = newStatus;
+                renderPlannerBoard();
+                renderDashboard();
+            }
+        }
+
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            renderPlannerBoard();
+            renderDashboard();
+        }
+
+        // ----------------------------------------------------
+        // 7. BLACKBOARD & STICKY NOTES & CANVAS
+        // ----------------------------------------------------
+        function renderBlackboardNotes() {
+            const container = document.getElementById('sticky-notes-container');
+            container.innerHTML = stickyNotes.map(n => {
+                const author = familyMembers.find(m => m.id === n.authorId) || familyMembers[0];
+                return `
+                    <div class="${n.style} p-4 rounded-xl border-2 shadow-lg transform rotate-[-1deg] hover:rotate-0 transition-transform relative group flex flex-col justify-between min-h-[140px]">
+                        <button onclick="deleteNote(${n.id})" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-600 transition">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                        <p class="chalk-text text-xl font-bold leading-relaxed mb-3">${n.content}</p>
+                        <div class="flex items-center space-x-2 text-xs font-bold border-t border-black/10 pt-2">
+                            <span>${author.avatar}</span>
+                            <span>${author.name}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteNote(noteId) {
+            stickyNotes = stickyNotes.filter(n => n.id !== noteId);
+            renderBlackboardNotes();
+        }
+
+        // Canvas Drawing Logic
+        let canvas, ctx, isDrawing = false, currentBrushColor = "#000000";
+
+        function initDoodleCanvas() {
+            canvas = document.getElementById('doodleCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Adjust canvas internal dimensions to parent container
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Touch & Mouse Listeners
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                isDrawing = true;
+                ctx.beginPath();
+                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!isDrawing) return;
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                ctx.strokeStyle = currentBrushColor;
+                ctx.lineWidth = document.getElementById('brushSize').value;
+                ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+                ctx.stroke();
+            });
+
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.strokeStyle = currentBrushColor;
+            ctx.lineWidth = document.getElementById('brushSize').value;
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function setBrushColor(color) {
+            currentBrushColor = color;
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // ----------------------------------------------------
+        // 8. MODAL FORMS & EVENT HANDLERS
+        // ----------------------------------------------------
+        function openQuickLogModal() {
+            document.getElementById('modal-log-time').classList.remove('hidden');
+        }
+
+        function openAddTaskModal() {
+            document.getElementById('modal-add-task').classList.remove('hidden');
+        }
+
+        function openAddNoteModal() {
+            document.getElementById('modal-add-note').classList.remove('hidden');
+        }
+
+        function openAddEventModal() {
+            alert("New event slot scheduled! Syncing to all family calendars.");
+        }
+
+        function openMemberModal() {
+            const list = document.getElementById('member-edit-list');
+            list.innerHTML = familyMembers.map(m => `
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">${m.avatar}</span>
+                        <input type="text" value="${m.name}" onchange="updateMemberName(${m.id}, this.value)" class="font-bold text-sm bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800">
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${m.color} text-white">${m.role}</span>
+                </div>
+            `).join('');
+            document.getElementById('modal-manage-members').classList.remove('hidden');
+        }
+
+        function updateMemberName(id, newName) {
+            const m = familyMembers.find(mem => mem.id === id);
+            if (m) {
+                m.name = newName;
+                populateMemberDropdowns();
+                renderDashboard();
+                renderSidebarMembers();
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function handleLogTimeSubmit(e) {
+            e.preventDefault();
+            const memberId = parseInt(document.getElementById('logMemberSelect').value);
+            const hours = parseFloat(document.getElementById('logHoursInput').value);
+
+            const member = familyMembers.find(m => m.id === memberId);
+            if (member) {
+                member.dailyHours += hours;
+                member.weeklyHours += hours;
+                renderDashboard();
+                closeModal('modal-log-time');
+            }
+        }
+
+        function handleAddTaskSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('taskTitleInput').value;
+            const assignedTo = parseInt(document.getElementById('taskAssignSelect').value);
+            const category = document.getElementById('taskCategorySelect').value;
+            const status = document.getElementById('taskStatusSelect').value;
+
+            tasks.push({
+                id: Date.now(),
+                title,
+                assignedTo,
+                category,
+                status
+            });
+
+            renderPlannerBoard();
+            renderDashboard();
+            closeModal('modal-add-task');
+            document.getElementById('formAddTask').reset();
+        }
+
+        function handleAddNoteSubmit(e) {
+            e.preventDefault();
+            const authorId = parseInt(document.getElementById('noteAuthorSelect').value);
+            const content = document.getElementById('noteContentInput').value;
+            const selectedBg = document.querySelector('input[name="noteBg"]:checked').value;
+
+            stickyNotes.unshift({
+                id: Date.now(),
+                authorId,
+                content,
+                style: selectedBg
+            });
+
+            renderBlackboardNotes();
+            closeModal('modal-add-note');
+            document.getElementById('formAddNote').reset();
+        }
+    </script>
+</body>
+</html>
